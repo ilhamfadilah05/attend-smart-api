@@ -8,7 +8,7 @@ export class AppService {
 
   version() {
     return {
-      appName: 'Dana mini program',
+      appName: 'Attend Smart Admin',
       version: 'v1.0',
     };
   }

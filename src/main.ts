@@ -48,7 +48,7 @@ async function bootstrap() {
 
   if (process.env.NODE_ENV === 'development') {
     const config = new DocumentBuilder()
-      .setTitle('Dana Mini Program')
+      .setTitle('Attend Smart Admin')
       .setDescription('No description')
       .setVersion('1.0')
       .addBearerAuth()
