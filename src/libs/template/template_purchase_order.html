@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Order</title>
+    <style>
+      @media print {
+        .footer-text {page-break-after: always;}
+      }
+
+      * {
+        font-family: monospace;
+      }
+
+      body {
+        padding: 20px 50px;
+      }
+
+      .header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .header > img {
+        object-fit: cover;
+        width: auto;
+        height: 50px;
+      }
+
+      .letterhead {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        font-size: 11px;
+        margin-top: 20px;
+      }
+
+      .letterhead > table {
+        height: 50px;
+        width: 29%;
+      }
+
+      .letterhead > table > tbody > tr > th, .letterhead > table > tbody > tr > td {
+        text-align: left;
+        font-weight: normal;
+      }
+
+      .letterhead > table > tbody > tr > td:last-child {
+        text-align: right;
+      }
+
+      .lettervendor{
+        margin-top: 1rem;
+        font-size: 11px;
+      }
+
+      .lettervendor > tbody > tr > th {
+        text-align: left;
+        width: 20%;
+        height: 20px;
+      }
+
+      .lettervendor > tbody > tr > td {
+        text-align: left;
+        width: 60%;
+        height: 20px;
+      }
+
+      .noted {
+        font-size: 11px;
+      }
+
+      .table {
+        width: 100%;
+        font-size: 11px;
+        border-collapse: collapse;
+        page-break-inside: auto;
+      }
+
+      .table > tr {
+        page-break-inside: avoid; 
+        page-break-after: auto
+      }
+
+      .table-item > tr > th, .table-item > tr > td {
+        border: 1px solid;
+      }
+
+      .table-item > tr > th {
+        height: 40px !important;
+        text-align: center; 
+      }
+
+      .table-item > tr > td {
+        height: 25px !important;
+        text-align: center; 
+      }
+
+      .table-footer > tr > th {
+        height: 25px;
+      }
+
+      ol {
+        font-size: 11px;
+      }
+
+      ol > li {
+        margin-bottom: 5px;
+      }
+
+      ul {
+        margin-left: -2rem;
+      }
+
+      ul > li {
+        margin-bottom: 5px;
+      }
+
+      .closing {
+        margin-top: 30px;
+        font-size: 11px;
+      }
+
+      .footer-text {
+        position: fixed;
+        bottom: 2px;
+        left: 20px;
+        font-size: 11px;
+        width: 100%;
+        font-weight: 600;
+      }
+
+      footer {
+        position: fixed;
+        bottom: 15px;
+        right: 20px;
+        text-align: right;
+        font-size: 11px;
+      }     
+
+      .signature {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        font-size: 11px;
+      }
+
+      .signature > div {
+        text-align: center;
+      }
+
+      .signature > div > p {
+        margin-bottom: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="header">
+      <h2><strong>PURCHASE ORDER</strong> </h2>
+      <img src="https://sandra.dompetdhuafa.org/media/logos/logo-letter-1.png" />
+    </div>
+
+    <div class="letterhead">
+      <div>
+        <p><b>YAYASAN DOMPET DHUAFA REPUBLIKA</b></p>
+        <p style="line-height: 150%;">
+          Gedung Philantropy <br>
+          Jl. Warung Jati Barat No.14 Jati Padang 12540 <br>
+          Pasar Minggu - Jakarta Selatan - Indonesia <br>
+          Ph. +6221 782 1292 | Fax +6221 782 1333 <br>
+          NPWP: 01.750.135.4-017.000
+        </p>
+      </div>
+      <table>
+        <tbody>
+          <tr>
+            <th>Tanggal</th>
+            <td> : </td>
+            <td>{{formatDate po.po_date}}</td>
+          </tr>
+          <tr>
+            <th>No.PR</th>
+            <td> : </td>
+            <td>{{purchase.purchase_hid}}</td>
+          </tr>
+          <tr>
+            <th>PO</th>
+            <td> : </td>
+            <td>{{po.po_hid}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <table class="lettervendor">
+      <tbody>
+        <tr>
+          <th>Kepada</th>
+          <td>: {{vendor.name}}</td>
+        </tr>
+        <tr>
+          <th>Alamat</th>
+          <td>: {{vendor.address}}</td>
+        </tr>
+        <tr>
+          <th>Kontak Person</th>
+          <td>: {{vendor.pic_hp}}</td>
+        </tr>
+        <tr>
+          <th>Telepon</th>
+          <td>: {{vendor.office_phone}}</td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td>: {{vendor.pic_email}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="noted">Harap dikirimkan barang / jasa berikut ini : </p>
+    <table class="table">
+      <tbody class="table-item">
+        <!-- Header Table -->
+        <tr>
+          <th style="width: 4%;">No</th>
+          <th style="width: 42%;">Keterangan</th>
+          <th style="width: 5%;">Qty</th>
+          <th style="width: 9%;">Satuan</th>
+          <th style="width: 20%;">Harga</th>
+          <th style="width: 20%;">Jumlah</th>
+        </tr>
+        <!-- Header Table -->
+      
+        <!-- Content Table -->
+        {{#each purchase_item}}
+          <tr>
+              <td style="width: 4%;">{{add @index 1}}</td>
+              <td style="text-align: left; width: 42%; padding: 5px;">{{specs}}</td>
+              <td style="width: 5%;">{{vendor_qty}}</td>
+              <td style="width: 9%;">Unit</td>
+              <td style="width: 20%;">{{formatCurrency vendor_final_price}}</td>
+              <td style="text-align: right; width: 20%; padding-right: 10px;">{{formatCurrency total}}</td>
+          </tr>
+        {{/each}}
+        <!-- Content Table -->
+      </tbody>
+
+      <!-- Footer Table -->
+      <tfoot class="table-footer">
+        <tr>
+          <th colspan="5" style="text-align: right; border: none; padding-right: 10px;">PPN</th>
+          <td style="border: none; text-align: right; padding-right: 10px;">{{formatCurrency po.tax}}</td>
+        </tr>
+        <tr>
+          <th colspan="5" style="text-align: right; border: none; padding-right: 10px;">Biaya Kirim & Instalasi</th>
+          <td style="border: none; text-align: right; padding-right: 10px;">{{formatCurrency po.shipping_cost}}</td>
+        </tr>
+        <tr>
+          <th colspan="5" style="text-align: right; border: none; padding-right: 10px;">Total</th>
+          <td style="border: none; text-align: right; padding-right: 10px;">{{formatCurrency po.total}}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div>
+      <h5>Catatan :</h5>
+      <ol>
+        <li>Pengiriman ke : {{purchase.address}}</li>
+        <li>Biaya kirim & instalasi : {{formatCurrency po.shipping_cost}}</li>
+        <li>Pembayaran : Transfer Bank setelah Invoice lengkap diterima finance, {{purchase.methode_payment}}</li>
+        {{#if po.other_details}}
+        <li>Keterangan lainnya :</li>
+          {{#each po.other_details}}
+            <ul>
+              <li>{{this}}</li>
+            </ul>
+          {{/each}}
+        {{/if}}
+      </ol> 
+    </div>
+
+    <div class="closing">
+      <p>Terima kasih atas perhatian dan kerjasamanya. <br> Hormat Kami.</p>
+    </div>
+
+    <div class="footer-text">
+      <p><i>*Dokumen dibuat secara elektronik tidak memerlukan tanda tangan.</i></p>
+    </div>
+
+    <!-- <div class="signature">
+      <div>
+        <p>Dibuat Oleh,</p>
+        <h5>Purchasing</h5>
+      </div>
+
+      <div>
+        <p>Disetujui Oleh,</p>
+        <h5>Senior Office General Affair</h5>
+      </div>
+    </div> -->
+  </body>
+</html>

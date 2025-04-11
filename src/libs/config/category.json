@@ -1,0 +1,26 @@
+[
+    {
+        "id": "pendidikan",
+        "name": "Pendidikan"
+    },
+    {
+        "id": "kemanusiaan",
+        "name": "Kemanusiaan"
+    },
+    {
+        "id": "kesehatan",
+        "name": "Kesehatan"
+    },
+    {
+        "id": "ekonomi",
+        "name": "Ekonomi"
+    },
+    {
+        "id": "sosal-dakwah",
+        "name": "Sosial Dakwah"
+    },
+    {
+        "id": "lingkungan",
+        "name": "Lingkungan"
+    }
+]

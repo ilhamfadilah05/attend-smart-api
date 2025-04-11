@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cetak Ajuan</title>
+        <style>
+          * {
+            font-family: monospace;
+          }
+    
+          body {
+            padding: 20px 50px;
+          }
+
+          .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+          }
+      
+          .header > img {
+            object-fit: cover;
+            width: auto;
+            height: 50px;
+          }
+
+          .purchase_detail {
+            margin-top: 1rem;
+            font-size: 11px;
+          }
+      
+          .purchase_detail > tbody > tr > th {
+            text-align: left;
+            width: 40%;
+            height: 20px;
+          }
+      
+          .purchase_detail > tbody > tr > td {
+            text-align: left;
+            width: auto;
+            height: 20px;
+          }
+
+          .line {
+            margin: 2rem 0px;
+          }
+
+          .table {
+            width: 100%;
+            font-size: 11px;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+            page-break-inside: always;
+          }
+
+          .table-item > tr {
+            page-break-inside: avoid; 
+            page-break-before: auto;
+          }
+        
+          .table-item > tr > th, .table-item > tr > td {
+            border: 1px solid;
+            padding: 0.5rem 1rem;
+          }
+        
+          .table-item > tr > th {
+            height: 40px !important;
+            text-align: center; 
+          }
+        
+          .table-item > tr > td {
+            height: 25px !important;
+            text-align: center; 
+          }
+        </style>
+      </head>
+
+      <body>
+        <div class="header">
+          <h2><strong>CETAK AJUAN | NO.PR : {{purchase.purchase_hid}}</strong> </h2>
+          <img src="https://sandra.dompetdhuafa.org/media/logos/logo-letter-1.png" />
+        </div>
+
+        <table class="purchase_detail">
+          <tbody>
+            <tr>
+              <th>Nama Pengadaan</th>
+              <td> : </td>
+              <td>{{purchase.title}}</td>
+            </tr>
+            <tr>
+              <th>Deskripsi</th>
+              <td> : </td>
+              <td>{{purchase.description}}</td>
+            </tr>
+            <tr>
+              <th>Tanggal Pengadaan</th>
+              <td> : </td>
+              <td>{{formatDate purchase.purchase_date}}</td>
+            </tr>
+            <tr>
+              <th>Alamat Pengiriman</th>
+              <td> : </td>
+              <td>{{purchase.address}}</td>
+            </tr>
+            <tr>
+              <th>Metode Pembayaran</th>
+              <td> : </td>
+              <td>{{purchase.methode_payment}}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <hr class="line">
+        {{#each data_result}}
+          <h3>{{title}}</h3>
+          <table class="table">
+            <tbody class="table-item">
+              <tr>
+                <th style="width: 4%;">No</th>
+                {{#each headers}}
+                  <th>{{this}}</th>
+                {{/each}}
+              </tr>
+              {{#each data_form}}
+                <tr>
+                  <td style="width: 4%;">{{add @index 1}}</td>
+                  {{#each this}}
+                    <td>{{this}}</td>
+                  {{/each}}
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        {{/each}}
+      </body>
+</html>

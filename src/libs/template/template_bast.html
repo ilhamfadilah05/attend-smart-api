@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serah Terima</title>
+    <style>
+      @media print {
+        .footer-text {page-break-after: always;}
+      }
+
+      * {
+        font-family: monospace;
+      }
+
+      body {
+        padding: 20px 50px;
+      }
+
+      .header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .header > img {
+        object-fit: cover;
+        width: auto;
+        height: 50px;
+      }
+
+      .letterhead {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        font-size: 11px;
+        margin-top: 20px;
+      }
+
+      .letterhead > table {
+        height: 50px;
+        width: 29%;
+      }
+
+      .letterhead > table > tbody > tr > th, .letterhead > table > tbody > tr > td {
+        text-align: left;
+        font-weight: normal;
+      }
+
+      .letterhead > table > tbody > tr > td:last-child {
+        text-align: right;
+      }
+
+      .lettervendor{
+        margin-top: 1rem;
+        font-size: 11px;
+      }
+
+      .lettervendor > tbody > tr > th {
+        text-align: left;
+        width: 20%;
+        height: 20px;
+      }
+
+      .lettervendor > tbody > tr > td {
+        text-align: left;
+        width: 60%;
+        height: 20px;
+      }
+
+      .noted {
+        font-size: 11px;
+      }
+
+      .table {
+        width: 100%;
+        font-size: 11px;
+        border-collapse: collapse;
+        page-break-inside: auto;
+        margin-top: 2rem;
+      }
+
+      .table > tr {
+        page-break-inside: avoid; 
+        page-break-after: auto
+      }
+
+      .table-item > tr > th, .table-item > tr > td {
+        border: 1px solid;
+      }
+
+      .table-item > tr > th {
+        height: 40px !important;
+        text-align: center; 
+      }
+
+      .table-item > tr > td {
+        height: 25px !important;
+        text-align: center; 
+      }
+
+      .table-footer > tr > th {
+        height: 25px;
+      }
+
+      ol {
+        font-size: 11px;
+      }
+
+      ol > li {
+        margin-bottom: 5px;
+      }
+
+      ul {
+        margin-left: -2rem;
+      }
+
+      ul > li {
+        margin-bottom: 5px;
+      }
+
+      .closing {
+        margin-top: 30px;
+        font-size: 11px;
+      }
+
+      .footer-text {
+        position: fixed;
+        bottom: 2px;
+        left: 20px;
+        font-size: 11px;
+        width: 100%;
+        font-weight: 600;
+      }
+
+      footer {
+        position: fixed;
+        bottom: 15px;
+        right: 20px;
+        text-align: right;
+        font-size: 11px;
+      }     
+
+      .signature {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        font-size: 11px;
+      }
+
+      .signature > div {
+        text-align: center;
+      }
+
+      .signature > div > p {
+        margin-bottom: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <div class="header">
+      <h2><strong>SERAH TERIMA</strong> </h2>
+      <img src="https://sandra.dompetdhuafa.org/media/logos/logo-letter-1.png" />
+    </div>
+
+    <div class="letterhead">
+      <div>
+        <p><b>YAYASAN DOMPET DHUAFA REPUBLIKA</b></p>
+        <p style="line-height: 150%;">
+          Gedung Philantropy <br>
+          Jl. Warung Jati Barat No.14 Jati Padang 12540 <br>
+          Pasar Minggu - Jakarta Selatan - Indonesia <br>
+          Ph. +6221 782 1292 | Fax +6221 782 1333 <br>
+          NPWP: 01.750.135.4-017.000
+        </p>
+      </div>
+      <table>
+        <tbody>
+          <tr>
+            <th>No.PR</th>
+            <td> : </td>
+            <td>{{purchase_hid}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <table class="lettervendor">
+      <tbody>
+        <tr>
+          <th>Tanggal Terima</th>
+          <td>: {{formatDate bast.handover_date}}</td>
+        </tr>
+        <tr>
+          <th>Nama Penerima</th>
+          <td>: {{bast.received_by}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table class="table">
+      <tbody class="table-item">
+        <!-- Header Table -->
+        <tr>
+          <th style="width: 4%;">No</th>
+          <th style="width: 42%;">Nama</th>
+          <th style="width: 5%;">Qty</th>
+          <th style="width: 9%;">Qty Diterima</th>
+          <th style="width: 20%;">Serial Number</th>
+        </tr>
+        <!-- Header Table -->
+      
+        <!-- Content Table -->
+        {{#each bast.items}}
+          <tr>
+              <td style="width: 4%;">{{add @index 1}}</td>
+              <td style="text-align: left; width: 42%; padding: 5px;">{{name}}</td>
+              <td style="width: 5%;">{{qty}}</td>
+              <td style="width: 9%;">{{qty_received}}</td>
+              <td style="width: 20%;">{{serial_number}}</td>
+          </tr>
+        {{/each}}
+        <!-- Content Table -->
+      </tbody>
+    </table>
+
+    <div>
+      <h5>Catatan : {{bast.note}}</h5>
+    </div>
+
+    <div>
+      <h5>
+        File/Foto :
+        <p><i>*Serah_terima.pdf(diklik akan mengarah ke file atau menampilkan gambar)</i></p>
+        
+        <ol>
+          {{#each bast.files}}
+            <li>
+              <a href="{{storage_path}}" target="_blank">{{document_name}}</a>
+            </li>
+          {{/each}}
+        </ol>
+      </h5>
+    </div>
+
+    <!-- <div class="signature">
+      <div>
+        <p>Dibuat Oleh,</p>
+        <h5>Purchasing</h5>
+      </div>
+
+      <div>
+        <p>Disetujui Oleh,</p>
+        <h5>Senior Office General Affair</h5>
+      </div>
+    </div> -->
+  </body>
+</html>
