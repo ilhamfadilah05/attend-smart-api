@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["cron"],
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,
