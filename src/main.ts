@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-// (global as any).crypto = require('crypto');
+ (global as any).crypto = require('crypto');
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
