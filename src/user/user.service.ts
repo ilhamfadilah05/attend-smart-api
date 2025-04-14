@@ -1,6 +1,5 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -164,8 +163,7 @@ export class UserService {
   async findOne(id: string) {
     try {
       const [user]: [User] = await this.repository.query(
-        `SELECT u.id, u.name,u.is_admin, u.email, u.created_at, u.updated_at, u.nik, u.phone,
-        u.status, u.start_date, u.end_date,
+        `SELECT u.id, u.name,u.is_admin, u.email, u.created_at, u.updated_at, u.nik, u.phone, u.is_admin,
             json_build_object(
                 'id', r.id,
                 'name', r.name
@@ -189,6 +187,7 @@ export class UserService {
           phone: user.phone,
           email: user.email,
           role: user.role,
+          is_admin: user.is_admin,
           created_at: user.created_at,
           updated_at: user.updated_at,
         },
@@ -203,28 +202,6 @@ export class UserService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      if (payload.status) {
-        const hasAccess = features.find(
-          (feature) =>
-            feature.action === 'block' && feature.subject === 'users',
-        );
-
-        if (!hasAccess) {
-          throw new ForbiddenException('Has no access');
-        }
-      }
-
-      if (payload.start_date || payload.end_date) {
-        const hasAccess = features.find(
-          (feature) =>
-            feature.action === 'change_period' && feature.subject === 'users',
-        );
-
-        if (!hasAccess) {
-          throw new ForbiddenException('Has no access');
-        }
-      }
-
       const updateData = {
         name: payload.name,
         nik: payload.nik,
@@ -246,43 +223,21 @@ export class UserService {
         }
       }
 
-      let update = '';
-      let count = 1;
-      const keys = Object.keys(updateData);
-      const params = [];
-      for (let i = 0; i < keys.length; i++) {
-        const value = updateData[keys[i]];
+      const [user]: [User] = await this.repository.query(
+        `SELECT u.id, u.name, u.email, u.created_at, u.updated_at, u.role_id, u.is_admin FROM users u WHERE u.id = $1`,
+        [id],
+      );
 
-        if (value === null) continue;
+      if (!user) throw new NotFoundException('User not found');
 
-        if (keys[i] === 'email') {
-          continue;
-        }
+      const params: any[] = [];
 
-        if (
-          typeof value === 'string' &&
-          value !== undefined &&
-          value !== null &&
-          value.length > 0
-        ) {
-          update +=
-            `${keys[i]} = $${count}` + (i !== keys.length - 1 ? ', ' : '');
-          params.push(value);
-          count++;
-          continue;
-        }
-
-        if (
-          typeof value === 'number' &&
-          value !== undefined &&
-          value !== null
-        ) {
-          update +=
-            `${keys[i]} = $${count}` + (i !== keys.length - 1 ? ', ' : '');
-          params.push(value);
-          count++;
-        }
-      }
+      const update = Object.keys(updateData)
+        .map((key, index) => {
+          params.push(updateData[key]);
+          return `${key} = $${index + 1}`;
+        })
+        .join(', ');
 
       params.push(id);
 
