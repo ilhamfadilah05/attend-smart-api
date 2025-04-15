@@ -160,19 +160,19 @@ export class HistoryService {
 
       if (query.id_employee !== undefined) {
         const paramIndex = searchParams.length + 1;
-        searchConditions.push(`e.id = $${paramIndex}`);
+        searchConditions.push(`h.id_employee = $${paramIndex}`);
         searchParams.push(query.id_employee);
       }
 
       if (query.id_branch !== undefined) {
         const paramIndex = searchParams.length + 1;
-        searchConditions.push(`b.id = $${paramIndex}`);
+        searchConditions.push(`h.id_branch = $${paramIndex}`);
         searchParams.push(query.id_branch);
       }
 
       if (query.id_department !== undefined) {
         const paramIndex = searchParams.length + 1;
-        searchConditions.push(`d.id = $${paramIndex}`);
+        searchConditions.push(`h.id_department = $${paramIndex}`);
         searchParams.push(query.id_department);
       }
 
