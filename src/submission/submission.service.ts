@@ -127,8 +127,8 @@ export class SubmissionService {
 
       const searchCondition =
         searchConditions.length > 0
-          ? `AND ${searchConditions.join(' AND ')}`
-          : '';
+          ? `AND s.deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
+          : 's.deleted_at IS NULL';
 
       // sorting logic
       let sortClause = 'ORDER BY s.created_at DESC';
@@ -153,7 +153,7 @@ export class SubmissionService {
         FROM submissions AS s
         LEFT JOIN employees AS e ON s.id_employee = e.id
         LEFT JOIN departments AS d ON e.id_department = d.id
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
         ${sortClause}
         LIMIT $${searchParams.length + 1}
         OFFSET $${searchParams.length + 2}
@@ -165,7 +165,7 @@ export class SubmissionService {
         SELECT COUNT(*) as count
         FROM submissions AS s
         LEFT JOIN employees AS e ON s.id_employee = e.id
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
       `;
       const countSubmissionsParams = searchParams;
 
@@ -214,7 +214,7 @@ export class SubmissionService {
         `SELECT ${SELECTED_COLUMNS.join(', ')} FROM submissions s
         LEFT JOIN employees AS e ON s.id_employee = e.id
         LEFT JOIN departments AS d ON e.id_department = d.id
-        WHERE s.id = $1`,
+        WHERE s.id = $1 AND s.deleted_at IS NULL`,
         [id],
       )) as Submission[];
 
@@ -247,7 +247,7 @@ export class SubmissionService {
     try {
       // check submission
       const [submission] = (await queryRunner.manager.query(
-        'SELECT id, image, status, id_employee FROM submissions WHERE id = $1',
+        'SELECT id, image, status, id_employee FROM submissions WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Submission[];
 
@@ -256,7 +256,7 @@ export class SubmissionService {
 
       // check employee
       const [employeess] = (await queryRunner.manager.query(
-        'SELECT id FROM employees WHERE id = $1',
+        'SELECT id FROM employees WHERE id = $1 AND deleted_at IS NULL',
         [payload.id_employee],
       )) as Employee[];
 
@@ -364,7 +364,7 @@ export class SubmissionService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const querySQL = `TRUNCATE FROM submissions WHERE id = $1 CASCADE`;
+      const querySQL = `UPDATE submissions SET deleted_at = NOW() WHERE id = $1 RETURNING *`;
       const params = [id];
 
       const [[submission]]: [Submission[]] = await queryRunner.manager.query(

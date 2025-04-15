@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -41,4 +42,7 @@ export class Salary {
 
   @UpdateDateColumn({ type: 'timestamp', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
+
+  @DeleteDateColumn({ nullable: true, type: 'timestamp' })
+  deleted_at: Date;
 }

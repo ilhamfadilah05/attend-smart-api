@@ -55,62 +55,77 @@ export class DepartmentService {
         query.page,
         query.limit,
       );
-      const filter = this.queryHelper.search(
-        [
-          {
-            param: 'name',
-            column: 'name',
-            operator: 'ILIKE',
-          },
-        ],
-        {
-          queryString: query,
-          params: [limit, offset],
-        },
-      );
 
-      let orderBy = 'ORDER BY created_at DESC';
+      const SELECTED_COLUMNS = ['id', 'name', 'created_at'];
 
+      // Search conditions and parameters
+      const searchConditions: string[] = [];
+      const searchParams: any[] = [];
+
+      // filter by exact amount
+      if (query.name !== undefined) {
+        const paramIndex = searchParams.length + 1;
+        searchConditions.push(`LOWER(name) LIKE $${paramIndex}`);
+        searchParams.push(`%${query.name.toLowerCase()}%`);
+      }
+
+      const searchCondition =
+        searchConditions.length > 0
+          ? `deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
+          : 'deleted_at IS NULL';
+
+      // sorting logic
+      let sortClause = 'ORDER BY created_at ASC';
       if (query.sort_by) {
-        const validSortColumns = ['name', 'created_at'];
+        const validSortColumns = ['created_at'];
 
-        // Split the sort params
+        // split the sort params
         const [column, order] = query.sort_by.split('-');
 
-        // Validate
+        // validate
         if (validSortColumns.includes(column)) {
-          const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-          orderBy = `ORDER BY ${column} ${sortOrder}`;
+          const sortOrder = ['ASC', 'DESC'].includes(order.toUpperCase())
+            ? order.toUpperCase()
+            : 'ASC';
+          sortClause = `ORDER BY ${column} ${sortOrder}`;
         }
       }
 
-      const [departments, [totalDepartments]]: [
-        Department[],
-        { count: number }[],
-      ] = await Promise.all([
-        this.repository.query(
-          `SELECT id, name, created_at, updated_at FROM departments  ${filter.where.q} ${orderBy} LIMIT $1 OFFSET $2`,
-          filter.param.q,
-        ),
-        this.repository.query(
-          `SELECT COUNT(*) as count FROM departments ${filter.where.c}`,
-          filter.param.c,
-        ),
-      ]);
+      // fetch transaction query & parameter
+      const fetchDataQuery = `
+        SELECT ${SELECTED_COLUMNS.join(', ')}
+        FROM departments
+        WHERE ${searchCondition}
+        ${sortClause}
+        LIMIT $${searchParams.length + 1}
+        OFFSET $${searchParams.length + 2}
+      `;
+      const fetchDataParams = [...searchParams, limit, offset];
 
+      // Count total configurations query and parameters
+      const countDataQuery = `
+        SELECT COUNT(*) as count
+        FROM departments
+        WHERE ${searchCondition}
+      `;
+      const countDataParams = searchParams;
+
+      // Execute queries
+      const [dataItem, [totaldataItem]]: [any[], { count: number }[]] =
+        await Promise.all([
+          this.repository.query(fetchDataQuery, fetchDataParams),
+          this.repository.query(countDataQuery, countDataParams),
+        ]);
+
+      // Format response
       return this.res.formatResponse({
         success: true,
         statusCode: 200,
         message: 'Get department success',
-        data: departments.map((cg) => ({
-          id: cg.id,
-          name: cg.name,
-          created_at: cg.created_at,
-          updated_at: cg.updated_at,
-        })),
-        page: page,
+        data: dataItem,
+        page,
         pageSize: limit,
-        totalData: Number(totalDepartments.count),
+        totalData: Number(totaldataItem.count),
       });
     } catch (error) {
       this.error.handleError(
@@ -123,7 +138,7 @@ export class DepartmentService {
   async findOne(id: string) {
     try {
       const [Department] = (await this.repository.query(
-        'SELECT * FROM departments WHERE id = $1',
+        'SELECT * FROM departments WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Department[];
 
@@ -154,7 +169,7 @@ export class DepartmentService {
     await queryRunner.startTransaction();
     try {
       const [Department] = (await queryRunner.manager.query(
-        'SELECT id FROM departments WHERE id = $1',
+        'SELECT id FROM departments WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Department[];
       if (!Department) throw new NotFoundException('Department not found');
@@ -188,7 +203,7 @@ export class DepartmentService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const querySQL = `TRUNCATE FROM departments WHERE id = $1 CASCADE`;
+      const querySQL = `UPDATE departments SET deleted_at = NOW() WHERE id = $1 RETURNING *`;
       const params = [id];
 
       const [[department]]: [Department[]] = await queryRunner.manager.query(

@@ -177,11 +177,11 @@ export class RoleService {
       const [roles, [countedRoles]]: [Role[], { total: number }[]] =
         await Promise.all([
           this.repository.query(
-            `SELECT roles.id, roles.name, roles.created_at, roles.updated_at FROM roles ${filter.where.q} ${orderBy} LIMIT $1 OFFSET $2`,
+            `SELECT roles.id, roles.name, roles.created_at, roles.updated_at FROM roles ${filter.where.q} AND roles.deleted_at IS NULL ${orderBy} LIMIT $1 OFFSET $2 `,
             filter.param.q,
           ),
           this.repository.query(
-            `SELECT COUNT(*) as total FROM roles ${filter.where.c}`,
+            `SELECT COUNT(*) as total FROM roles ${filter.where.c} AND roles.deleted_at IS NULL`,
             filter.param.c,
           ),
         ]);
@@ -208,7 +208,7 @@ export class RoleService {
   async findOne(id: string) {
     try {
       const [role]: [Role] = await this.repository.query(
-        'SELECT * FROM roles WHERE id = $1 LIMIT 1',
+        'SELECT * FROM roles WHERE id = $1 LIMIT 1 AND roles.deleted_at IS NULL',
         [id],
       );
 
@@ -241,7 +241,7 @@ export class RoleService {
     await queryRunner.startTransaction();
     try {
       const [role]: [Role] = await queryRunner.manager.query(
-        'SELECT * FROM roles WHERE id = $1  LIMIT 1',
+        'SELECT * FROM roles WHERE id = $1 AND deleted_at IS NULL LIMIT 1 ',
         [id],
       );
 
@@ -287,7 +287,7 @@ export class RoleService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const querySQL = `TRUNCATE FROM roles WHERE id = $1 CASCADE`;
+      const querySQL = `UPDATE roles SET deleted_at = NOW() WHERE id = $1 RETURNING *`;
       const params = [id];
 
       const [[role]]: [Role[]] = await queryRunner.manager.query(

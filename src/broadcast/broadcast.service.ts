@@ -92,8 +92,8 @@ export class BroadcastService {
 
       const searchCondition =
         searchConditions.length > 0
-          ? `AND ${searchConditions.join(' AND ')}`
-          : '';
+          ? `deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
+          : 'deleted_at IS NULL';
 
       // sorting logic
       let sortClause = 'ORDER BY created_at ASC';
@@ -116,7 +116,7 @@ export class BroadcastService {
       const fetchBroadcastsQuery = `
         SELECT ${SELECTED_COLUMNS.join(', ')}
         FROM broadcasts
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
         ${sortClause}
         LIMIT $${searchParams.length + 1}
         OFFSET $${searchParams.length + 2}
@@ -127,7 +127,7 @@ export class BroadcastService {
       const countBroadcastsQuery = `
         SELECT COUNT(*) as count
         FROM broadcasts
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
       `;
       const countBroadcastsParams = searchParams;
 
@@ -161,7 +161,7 @@ export class BroadcastService {
   async findOne(id: string) {
     try {
       const [Broadcast] = (await this.repository.query(
-        'SELECT * FROM broadcasts WHERE id = $1',
+        'SELECT * FROM broadcasts WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Broadcast[];
 
@@ -239,7 +239,7 @@ export class BroadcastService {
     let imageName = '';
     try {
       const [broadcast] = (await queryRunner.manager.query(
-        'SELECT id, image FROM broadcasts WHERE id = $1',
+        'SELECT id, image FROM broadcasts WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Broadcast[];
       if (!broadcast) throw new NotFoundException('Broadcast not found');
@@ -295,24 +295,24 @@ export class BroadcastService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      // delete image
-      const [resultImage] = (await queryRunner.manager.query(
-        'SELECT image FROM broadcasts WHERE id = $1',
-        [id],
-      )) as Broadcast[];
+      // // delete image
+      // const [resultImage] = (await queryRunner.manager.query(
+      //   'SELECT image FROM broadcasts WHERE id = $1',
+      //   [id],
+      // )) as Broadcast[];
 
-      // check before image
-      if (resultImage.image) {
-        // delete before image
-        await this.fs.removeFile(
-          'broadcasts/' +
-            resultImage.image.split('/')[
-              resultImage.image.split('/').length - 1
-            ],
-        );
-      }
+      // // check before image
+      // if (resultImage.image) {
+      //   // delete before image
+      //   await this.fs.removeFile(
+      //     'broadcasts/' +
+      //       resultImage.image.split('/')[
+      //         resultImage.image.split('/').length - 1
+      //       ],
+      //   );
+      // }
 
-      const querySQL = `TRUNCATE FROM broadcasts WHERE id = $1 CASCADE`;
+      const querySQL = `UPDATE broadcasts SET deleted_at = NOW() WHERE id = $1 RETURNING *`;
       const params = [id];
 
       const [[broadcast]]: [Broadcast[]] = await queryRunner.manager.query(

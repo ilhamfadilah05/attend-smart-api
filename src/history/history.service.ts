@@ -52,7 +52,7 @@ export class HistoryService {
 
       // check employee
       const [employee] = await queryRunner.manager.query(
-        'SELECT id, id_department, id_branch FROM employees WHERE id = $1',
+        'SELECT id, id_department, id_branch FROM employees WHERE id = $1 ',
         [payload.id_employee],
       );
 
@@ -325,7 +325,7 @@ export class HistoryService {
     let imageName = '';
     try {
       const [history] = (await queryRunner.manager.query(
-        'SELECT id FROM histories WHERE id = $1',
+        'SELECT id FROM histories WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as History[];
 
@@ -333,7 +333,7 @@ export class HistoryService {
 
       // check employee
       const [employee] = await queryRunner.manager.query(
-        'SELECT id FROM employees WHERE id = $1',
+        'SELECT id FROM employees WHERE id = $1 AND deleted_at IS NULL',
         [payload.id_employee],
       );
 

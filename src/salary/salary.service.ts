@@ -111,8 +111,8 @@ export class SalaryService {
 
       const searchCondition =
         searchConditions.length > 0
-          ? `AND ${searchConditions.join(' AND ')}`
-          : '';
+          ? `AND s.deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
+          : 's.deleted_at IS NULL';
 
       // sorting logic
       let sortClause = 'ORDER BY s.created_at ASC';
@@ -137,7 +137,7 @@ export class SalaryService {
         FROM salaries AS s
         LEFT JOIN employees AS e ON s.id_employee = e.id
         LEFT JOIN departments AS d ON e.id_department = d.id
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
         ${sortClause}
         LIMIT $${searchParams.length + 1}
         OFFSET $${searchParams.length + 2}
@@ -149,7 +149,7 @@ export class SalaryService {
         SELECT COUNT(*) as count
         FROM salaries AS s
         LEFT JOIN employees AS e ON s.id_employee = e.id
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
       `;
       const countSalariesParams = searchParams;
 
@@ -181,7 +181,7 @@ export class SalaryService {
   async findOne(id: string) {
     try {
       const [salary] = (await this.repository.query(
-        'SELECT * FROM salaries WHERE id = $1',
+        'SELECT * FROM salaries WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Salary[];
 
@@ -208,7 +208,7 @@ export class SalaryService {
     try {
       // check salary
       const [salary] = (await queryRunner.manager.query(
-        'SELECT id FROM salaries WHERE id = $1',
+        'SELECT id FROM salaries WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Salary[];
       // validate
@@ -216,7 +216,7 @@ export class SalaryService {
 
       // check employee
       const [employee] = (await queryRunner.manager.query(
-        'SELECT id FROM employees WHERE id = $1',
+        'SELECT id FROM employees WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Salary[];
       // validate
@@ -259,7 +259,7 @@ export class SalaryService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const querySQL = `TRUNCATE FROM salaries WHERE id = $1 CASCADE`;
+      const querySQL = `UPDATE salaries SET deleted_at = NOW() WHERE id = $1 RETURNING *`;
       const params = [id];
 
       const [[salaries]]: [Salary[]] = await queryRunner.manager.query(

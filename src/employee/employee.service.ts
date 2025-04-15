@@ -153,8 +153,8 @@ export class EmployeeService {
 
       const searchCondition =
         searchConditions.length > 0
-          ? `AND ${searchConditions.join(' AND ')}`
-          : '';
+          ? `e.deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
+          : 'e.deleted_at IS NULL';
 
       // sorting logic
       let sortClause = 'ORDER BY e.created_at ASC';
@@ -180,7 +180,7 @@ export class EmployeeService {
         LEFT JOIN users u ON u.id = e.id_user
         LEFT JOIN departments d ON d.id = e.id_department
         LEFT JOIN branches b ON b.id = e.id_branch
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
         ${sortClause}
         LIMIT $${searchParams.length + 1}
         OFFSET $${searchParams.length + 2}
@@ -191,7 +191,7 @@ export class EmployeeService {
       const countDatasQuery = `
         SELECT COUNT(*) as count
         FROM employees AS e
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
       `;
       const countDatasParams = searchParams;
 
@@ -250,7 +250,7 @@ export class EmployeeService {
          LEFT JOIN users u ON u.id = e.id_user
          LEFT JOIN departments d ON d.id = e.id_department
          LEFT JOIN branches b ON b.id = e.id_branch
-         WHERE e.id = $1`,
+         WHERE e.id = $1 AND e.deleted_at IS NULL`,
         [id],
       )) as Employee[];
 
@@ -282,28 +282,28 @@ export class EmployeeService {
     try {
       // check employee and validate
       const [employee] = await queryRunner.manager.query(
-        'SELECT id, id_user, id_department, id_branch, image FROM employees WHERE id = $1',
+        'SELECT id, id_user, id_department, id_branch, image FROM employees WHERE id = $1 AND deleted_at IS NULL',
         [id],
       );
       if (!employee) throw new NotFoundException('Employee not found');
 
       // check department and validate
       const [department] = await queryRunner.manager.query(
-        'SELECT id FROM departments WHERE id = $1',
+        'SELECT id FROM departments WHERE id = $1 AND deleted_at IS NULL',
         [payload.id_department],
       );
       if (!department) throw new NotFoundException('Department not found');
 
       // check branch and validate
       const [branch] = await queryRunner.manager.query(
-        'SELECT id FROM branches WHERE id = $1',
+        'SELECT id FROM branches WHERE id = $1 AND deleted_at IS NULL',
         [payload.id_branch],
       );
       if (!branch) throw new NotFoundException('Branch not found');
 
       // check user and validate
       const [user] = await queryRunner.manager.query(
-        'SELECT id FROM users WHERE id = $1',
+        'SELECT id FROM users WHERE id = $1 AND deleted_at IS NULL',
         [payload.id_user],
       );
       if (!user) throw new NotFoundException('User not found');
@@ -370,24 +370,24 @@ export class EmployeeService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      // delete image
-      const [resultImage] = (await queryRunner.manager.query(
-        'SELECT image FROM employees WHERE id = $1',
-        [id],
-      )) as Employee[];
+      // // delete image
+      // const [resultImage] = (await queryRunner.manager.query(
+      //   'SELECT image FROM employees WHERE id = $1',
+      //   [id],
+      // )) as Employee[];
 
-      // check before image
-      if (resultImage.image) {
-        // delete before image
-        await this.fs.removeFile(
-          'employees/' +
-            resultImage.image.split('/')[
-              resultImage.image.split('/').length - 1
-            ],
-        );
-      }
+      // // check before image
+      // if (resultImage.image) {
+      //   // delete before image
+      //   await this.fs.removeFile(
+      //     'employees/' +
+      //       resultImage.image.split('/')[
+      //         resultImage.image.split('/').length - 1
+      //       ],
+      //   );
+      // }
 
-      const querySQL = `TRUNCATE FROM employees WHERE id = $1 CASCADE`;
+      const querySQL = `UPDATE employees SET deleted_at = NOW() WHERE id = $1 RETURNING *`;
       const params = [id];
 
       const [[employee]]: [Employee[]] = await queryRunner.manager.query(

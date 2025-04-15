@@ -90,8 +90,8 @@ export class BranchService {
 
       const searchCondition =
         searchConditions.length > 0
-          ? `AND ${searchConditions.join(' AND ')}`
-          : '';
+          ? `AND b.deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
+          : 'b.deleted_at IS NULL';
 
       let sortClause = 'ORDER BY b.created_at ASC';
 
@@ -116,7 +116,7 @@ export class BranchService {
         SELECT ${SELECTED_COLUMNS.join(', ')}
         FROM branches AS b
         LEFT JOIN employees e ON e.id_branch = b.id
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
         ${sortClause}
         LIMIT $${searchParams.length + 1}
         OFFSET $${searchParams.length + 2}
@@ -128,7 +128,7 @@ export class BranchService {
         SELECT COUNT(*) as count
         FROM branches AS b
         LEFT JOIN employees e ON e.id_branch = b.id
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
       `;
       const countDataParams = searchParams;
 
@@ -172,7 +172,7 @@ export class BranchService {
 
       // check branch
       const [data] = (await this.repository.query(
-        `SELECT ${SELECTED_COLUMNS.join(', ')} FROM branches WHERE id = $1`,
+        `SELECT ${SELECTED_COLUMNS.join(', ')} FROM branches WHERE id = $1 AND deleted_at IS NULL`,
         [id],
       )) as Branch[];
 
@@ -200,7 +200,7 @@ export class BranchService {
     try {
       // check branch
       const [data] = (await queryRunner.manager.query(
-        'SELECT id FROM branches WHERE id = $1',
+        'SELECT id FROM branches WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Branch[];
 
@@ -245,7 +245,7 @@ export class BranchService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const querySQL = `TRUNCATE FROM branches WHERE id = $1 CASCADE`;
+      const querySQL = `UPDATE branches SET deleted_at = NOW() WHERE id = $1 RETURNING *`;
       const params = [id];
 
       const [[branch]]: [Branch[]] = await queryRunner.manager.query(

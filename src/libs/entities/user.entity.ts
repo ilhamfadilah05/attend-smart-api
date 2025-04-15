@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Role } from './role.entity';
 
@@ -51,4 +52,7 @@ export class User {
 
   @UpdateDateColumn()
   updated_at: Timestamp;
+
+  @DeleteDateColumn({ nullable: true, type: 'timestamp' })
+  deleted_at: Date;
 }

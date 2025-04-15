@@ -97,8 +97,8 @@ export class UserService {
 
       const searchCondition =
         searchConditions.length > 0
-          ? `AND ${searchConditions.join(' AND ')}`
-          : '';
+          ? `deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
+          : 'u.deleted_at IS NULL';
 
       let sortClause = 'ORDER BY u.created_at ASC';
 
@@ -123,7 +123,7 @@ export class UserService {
         SELECT ${SELECTED_COLUMNS.join(', ')}
         FROM users AS u
         LEFT JOIN roles r ON r.id = u.role_id
-        WHERE 1=1 ${searchCondition}
+        WHERE ${searchCondition}
         ${sortClause}
         LIMIT $${searchParams.length + 1}
         OFFSET $${searchParams.length + 2}
@@ -170,7 +170,7 @@ export class UserService {
             ) AS role 
           FROM users u
           JOIN roles r ON u.role_id = r.id
-          WHERE u.id = $1 LIMIT 1`,
+          WHERE u.id = $1 LIMIT 1 AND u.deleted_at IS NULL`,
         [id],
       );
 
@@ -224,7 +224,7 @@ export class UserService {
       }
 
       const [user]: [User] = await this.repository.query(
-        `SELECT u.id, u.name, u.email, u.created_at, u.updated_at, u.role_id, u.is_admin FROM users u WHERE u.id = $1`,
+        `SELECT u.id, u.name, u.email, u.created_at, u.updated_at, u.role_id, u.is_admin FROM users u WHERE u.id = $1 LIMIT 1 AND u.deleted_at IS NULL`,
         [id],
       );
 
@@ -281,7 +281,7 @@ export class UserService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const querySQL = `TRUNCATE FROM users WHERE id = $1 CASCADE`;
+      const querySQL = `UPDATE users SET deleted_at = NOW() WHERE id = $1 RETURNING *`;
       const params = [id];
 
       const [[user]]: [User[]] = await queryRunner.manager.query(
