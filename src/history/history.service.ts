@@ -15,6 +15,7 @@ import { IUpdateHistory } from 'src/libs/interface';
 import { FirebaseStorageService } from 'src/libs/service/firebase/firebase-storage.service';
 import { v4 as uuid } from 'uuid';
 import { Employee } from 'src/libs/entities/employee.entity';
+import { delay } from 'rxjs';
 
 @Injectable()
 export class HistoryService {
@@ -191,10 +192,10 @@ export class HistoryService {
           `h.date_attend BETWEEN $${paramIndex} AND $${paramIndex + 1}`,
         );
 
+        console.log('searchParams', startDate, endDate);
+
         searchParams.push(startDate, endDate);
       }
-
-      console.log('searchParams', searchParams);
 
       const searchCondition =
         searchConditions.length > 0
@@ -205,19 +206,22 @@ export class HistoryService {
       let sortClause = 'ORDER BY h.date_attend DESC';
 
       if (query.sort_by) {
-        const validSortColumns = [
-          'h.date_attend',
-          'e.name',
-          'h.type',
-          'd.name',
-          'b.name',
-        ];
+        const columnMap = {
+          name: 'e.name',
+          date_attend: 'h.date_attend',
+          type: 'h.type',
+          delayed: 'h.delayed',
+          department_name: 'd.name',
+          branch_name: 'b.name',
+        };
 
-        // Split the sort params
-        const [column, order] = query.sort_by.split('-');
+        console.log('searchParams', query.sort_by);
 
-        // Validate
-        if (validSortColumns.includes(column)) {
+        const [columnKey, order] = query.sort_by.split('-');
+
+        const column = columnMap[columnKey];
+
+        if (column) {
           const sortOrder = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
           sortClause = `ORDER BY ${column} ${sortOrder}`;
         }
