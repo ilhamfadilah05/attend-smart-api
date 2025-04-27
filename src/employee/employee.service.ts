@@ -93,7 +93,6 @@ export class EmployeeService {
       group.salary = payload.id_salary
         ? ({ id: payload.id_salary } as Salary)
         : null;
-      group.phone = payload.phone;
       group.gender = payload.gender;
       group.address = payload.address;
       group.image = imageUrl;
@@ -131,7 +130,7 @@ export class EmployeeService {
         'e.name',
         'e.image',
         'e.gender',
-        'e.phone',
+        'u.phone',
         'e.created_at',
         'e.updated_at',
         'u.name as user_name',
@@ -226,7 +225,7 @@ export class EmployeeService {
         'e.name',
         'e.image',
         'e.gender',
-        'e.phone',
+        'u.phone',
         'e.address',
         'e.created_at',
         'e.updated_at',

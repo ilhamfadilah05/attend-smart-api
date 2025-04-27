@@ -37,9 +37,6 @@ export class Employee {
   name: string;
 
   @Column({ type: 'varchar', length: 255 })
-  phone: string;
-
-  @Column({ type: 'varchar', length: 255 })
   gender: string;
 
   @Column({ type: 'varchar', length: 255 })
