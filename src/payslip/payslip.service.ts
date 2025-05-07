@@ -46,7 +46,7 @@ export class PayslipService {
   }
 
   // 💼 Fungsi untuk Membuat Slip Gaji Otomatis
-  @Cron('0 0 8 16 * *', { timeZone: 'Asia/Jakarta' }) // Setiap tanggal 1 jam 6 pagi
+  @Cron('0 0 6 1 * *', { timeZone: 'Asia/Jakarta' }) // Setiap tanggal 1 jam 6 pagi
   async handlePayrollGeneration() {
     this.logger.debug('Membuat slip gaji otomatis...');
     try {
