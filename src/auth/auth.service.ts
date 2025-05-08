@@ -99,9 +99,6 @@ export class AuthService {
           roleId: data['role_id'],
           roleName: data['role_name'],
         }),
-        queryRunner.manager.update(User, data.id, {
-          last_login: new Date(),
-        }),
       ]);
 
       await queryRunner.commitTransaction();
@@ -164,9 +161,6 @@ export class AuthService {
           email: user.email,
           roleId: user['role_id'],
           roleName: user['role_name'],
-        }),
-        queryRunner.manager.update(User, user.id, {
-          last_login: new Date(),
         }),
       ]);
 

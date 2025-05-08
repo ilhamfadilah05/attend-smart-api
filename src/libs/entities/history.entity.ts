@@ -7,8 +7,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Department } from './department.entity';
-import { Branch } from './branch.entity';
 import { Employee } from './employee.entity';
 import { Submission } from './submission.entity';
 
@@ -23,17 +21,6 @@ export class History {
   })
   @JoinColumn({ name: 'id_employee' })
   id_employee: Employee;
-
-  @ManyToOne(() => Department, (v) => v.id, {
-    nullable: true,
-    cascade: ['remove'],
-  })
-  @JoinColumn({ name: 'id_department' })
-  department: Department;
-
-  @ManyToOne(() => Branch, (v) => v.id, { nullable: true, cascade: ['remove'] })
-  @JoinColumn({ name: 'id_branch' })
-  branch: Branch;
 
   @ManyToOne(() => Submission, (v) => v.id, {
     nullable: true,

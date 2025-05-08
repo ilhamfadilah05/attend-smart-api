@@ -97,7 +97,7 @@ export class UserService {
 
       const searchCondition =
         searchConditions.length > 0
-          ? `deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
+          ? `u.deleted_at IS NULL AND ${searchConditions.join(' AND ')}`
           : 'u.deleted_at IS NULL';
 
       let sortClause = 'ORDER BY u.created_at ASC';
@@ -133,9 +133,9 @@ export class UserService {
       // Count total configurations query and parameters
       const countDataQuery = `
         SELECT COUNT(*) as count
-        FROM branches AS b
-        LEFT JOIN employees e ON e.id_branch = b.id
-        WHERE 1=1 ${searchCondition}
+        FROM users AS u
+        LEFT JOIN roles r ON r.id = u.role_id
+        WHERE 1=1 AND ${searchCondition}
       `;
       const countDataParams = searchParams;
 

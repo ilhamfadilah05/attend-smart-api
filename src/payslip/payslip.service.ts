@@ -78,18 +78,6 @@ export class PayslipService {
         );
         const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-        // const now = new Date();
-        // const firstDayLastMonth = new Date(
-        //   now.getFullYear(),
-        //   now.getMonth(),
-        //   1,
-        // );
-        // const lastDayLastMonth = new Date(
-        //   now.getFullYear(),
-        //   now.getMonth(),
-        //   31,
-        // );
-
         // count attendance
         const countAttendance = (await this.repository.query(
           `SELECT COUNT(*) as attendance_days 

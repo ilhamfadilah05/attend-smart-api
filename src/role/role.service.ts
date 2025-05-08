@@ -177,11 +177,11 @@ export class RoleService {
       const [roles, [countedRoles]]: [Role[], { total: number }[]] =
         await Promise.all([
           this.repository.query(
-            `SELECT roles.id, roles.name, roles.created_at, roles.updated_at FROM roles ${filter.where.q} AND roles.deleted_at IS NULL ${orderBy} LIMIT $1 OFFSET $2 `,
+            `SELECT roles.id, roles.name, roles.created_at, roles.updated_at FROM roles WHERE roles.deleted_at IS NULL ${filter.where.q} ${orderBy} LIMIT $1 OFFSET $2 `,
             filter.param.q,
           ),
           this.repository.query(
-            `SELECT COUNT(*) as total FROM roles ${filter.where.c} AND roles.deleted_at IS NULL`,
+            `SELECT COUNT(*) as total FROM roles WHERE roles.deleted_at IS NULL ${filter.where.c}`,
             filter.param.c,
           ),
         ]);

@@ -101,8 +101,6 @@ export class HistoryService {
       group.id_employee = payload.id_employee
         ? ({ id: payload.id_employee } as Employee)
         : null;
-      group.department = { id: idDepartment } as Department;
-      group.branch = { id: idBranch } as Branch;
       group.lat_long = payload.lat_long;
       group.date_attend = payload.date_attend;
       group.delayed = payload.delayed;
@@ -232,8 +230,8 @@ export class HistoryService {
         SELECT ${SELECTED_COLUMN.join(', ')}
         FROM histories h
         LEFT JOIN employees e ON e.id = h.id_employee
-        LEFT JOIN branches b ON b.id = h.id_branch
-        LEFT JOIN departments d ON d.id = h.id_department
+        LEFT JOIN branches b ON b.id = e.id_branch
+        LEFT JOIN departments d ON d.id = e.id_department
         ${searchCondition}
         ${sortClause}
         LIMIT $${searchParams.length + 1}
