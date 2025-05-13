@@ -42,9 +42,8 @@ export class UserController {
   async update(
     @Param('id', UUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @Features() features: AccessDto[],
   ) {
-    return this.userService.update(id, updateUserDto, features);
+    return this.userService.update(id, updateUserDto);
   }
 
   @ApiOperation({ summary: 'Delete user' })

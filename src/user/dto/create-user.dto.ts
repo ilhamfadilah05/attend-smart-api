@@ -6,11 +6,9 @@ import {
   MaxLength,
   IsDateString,
   IsUUID,
-  IsEnum,
   IsBoolean,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { USER_STATUS } from 'src/libs/entities/user.entity';
 
 export class CreateUserDto {
   @IsString()
@@ -22,13 +20,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   @ApiProperty({ required: true })
   email: string;
-
-  @IsEnum(USER_STATUS, {
-    message: `Type must be one of the following: ${Object.values(USER_STATUS).join(', ')}`,
-  })
-  @IsOptional()
-  @ApiProperty({})
-  status: USER_STATUS;
 
   @IsString()
   @IsNotEmpty()

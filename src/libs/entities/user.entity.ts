@@ -11,12 +11,6 @@ import {
 } from 'typeorm';
 import { Role } from './role.entity';
 
-export enum USER_STATUS {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  BLOCK = 'BLOCK',
-}
-
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')

@@ -16,6 +16,7 @@ import { FirebaseStorageService } from 'src/libs/service/firebase/firebase-stora
 import { v4 as uuid } from 'uuid';
 import { Employee } from 'src/libs/entities/employee.entity';
 import { delay } from 'rxjs';
+import { Submission } from 'src/libs/entities/submission.entity';
 
 @Injectable()
 export class HistoryService {
@@ -107,6 +108,7 @@ export class HistoryService {
       group.type = payload.type;
       group.address = payload.address;
       group.image = imageUrl;
+      group.id_submission = { id: payload.id_submission } as Submission;
       group.deleted_at = null;
 
       queryRunner.manager.save(group);

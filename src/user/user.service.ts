@@ -162,15 +162,15 @@ export class UserService {
 
   async findOne(id: string) {
     try {
-      const [user]: [User] = await this.repository.query(
-        `SELECT u.id, u.name,u.is_admin, u.email, u.created_at, u.updated_at, u.nik, u.phone, u.is_admin,
+      const [user]: [any] = await this.repository.query(
+        `SELECT u.id, u.name, u.is_admin, u.email, u.created_at, u.updated_at, u.nik, u.phone,
             json_build_object(
                 'id', r.id,
                 'name', r.name
             ) AS role 
           FROM users u
           JOIN roles r ON u.role_id = r.id
-          WHERE u.id = $1 LIMIT 1 AND u.deleted_at IS NULL`,
+          WHERE u.id = $1 AND u.deleted_at IS NULL LIMIT 1`,
         [id],
       );
 
@@ -197,7 +197,7 @@ export class UserService {
     }
   }
 
-  async update(id: string, payload: UpdateUserDto, features: AccessDto[]) {
+  async update(id: string, payload: UpdateUserDto) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -214,7 +214,6 @@ export class UserService {
         password: payload.password
           ? await hashPassword(payload.password)
           : null,
-        status: payload.status,
       };
 
       for (const data in updateData) {
@@ -224,7 +223,7 @@ export class UserService {
       }
 
       const [user]: [User] = await this.repository.query(
-        `SELECT u.id, u.name, u.email, u.created_at, u.updated_at, u.role_id, u.is_admin FROM users u WHERE u.id = $1 LIMIT 1 AND u.deleted_at IS NULL`,
+        `SELECT u.id, u.name, u.email, u.created_at, u.updated_at, u.role_id, u.is_admin FROM users u WHERE u.id = $1 AND u.deleted_at IS NULL LIMIT 1`,
         [id],
       );
 
