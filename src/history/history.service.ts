@@ -111,7 +111,7 @@ export class HistoryService {
       group.id_submission = { id: payload.id_submission } as Submission;
       group.deleted_at = null;
 
-      queryRunner.manager.save(group);
+      await queryRunner.manager.save(group);
 
       await queryRunner.commitTransaction();
 

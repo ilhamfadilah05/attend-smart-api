@@ -37,7 +37,7 @@ export class SalaryService {
         [payload.id_employee],
       );
       if (employee['id_salary'])
-        throw new ConflictException('Employee already exist!');
+        throw new ConflictException('Penggajian karyawan ini sudah ada!');
 
       // create group
       const group = new Salary();
@@ -208,7 +208,7 @@ export class SalaryService {
     try {
       // check salary
       const [salary] = (await queryRunner.manager.query(
-        'SELECT id FROM salaries WHERE id = $1 AND deleted_at IS NULL',
+        'SELECT id, id_employee FROM salaries WHERE id = $1 AND deleted_at IS NULL',
         [id],
       )) as Salary[];
       // validate
@@ -217,8 +217,10 @@ export class SalaryService {
       // check employee
       const [employee] = (await queryRunner.manager.query(
         'SELECT id FROM employees WHERE id = $1 AND deleted_at IS NULL',
-        [id],
+        [salary.id_employee],
       )) as Salary[];
+      console.log(employee);
+
       // validate
       if (!employee) throw new NotFoundException('Employee not found');
 

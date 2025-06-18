@@ -47,8 +47,6 @@ export class RoleService {
       if (permissions) {
         const jsonPermissions: DefaultAccess[] = JSON.parse(permissions);
 
-        console.log(jsonPermissions);
-
         jsonPermissions.forEach((item) => {
           if (item && item['subject']) {
             if (!item.name) item.name = ACCESS_ACTION[item.action];
@@ -208,7 +206,7 @@ export class RoleService {
   async findOne(id: string) {
     try {
       const [role]: [Role] = await this.repository.query(
-        'SELECT * FROM roles WHERE id = $1 LIMIT 1 AND roles.deleted_at IS NULL',
+        'SELECT * FROM roles WHERE id = $1 AND roles.deleted_at IS NULL LIMIT 1',
         [id],
       );
 
