@@ -65,11 +65,4 @@ export class HistoryController {
   ) {
     return this.service.update(id, payload, image);
   }
-
-  @ApiOperation({ summary: 'Delete history' })
-  @ApiBearerAuth()
-  @Oacl(`${PATH.HISTORY}/:id`, 'delete', 'Untuk menghapus history')
-  remove(@Param('id', UUIDPipe) id: string) {
-    return this.service.remove(id);
-  }
 }

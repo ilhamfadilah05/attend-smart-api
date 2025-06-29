@@ -17,8 +17,8 @@ export class CreateHistoryDto {
   @IsNotEmpty()
   id_employee: string;
 
-  @ApiProperty({ description: 'The name of the history' })
-  @IsUUID()
+  @ApiPropertyOptional({ description: 'The name of the history' })
+  // @IsUUID()
   @IsOptional()
   id_submission: string;
 
@@ -31,12 +31,6 @@ export class CreateHistoryDto {
   @IsDateString()
   @IsNotEmpty()
   date_attend: Date;
-
-  @ApiPropertyOptional({ description: 'The name of the history' })
-  @IsNumber()
-  @Transform(({ value }) => (value === '' ? undefined : Number(value)))
-  @IsOptional()
-  delayed: number;
 
   @ApiProperty({
     enum: HISTORY_TYPE,
@@ -55,7 +49,7 @@ export class CreateHistoryDto {
   @IsNotEmpty()
   address: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     type: 'string',
     format: 'binary',
     description: 'Campaign image',

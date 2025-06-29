@@ -1,0 +1,1 @@
+git pull && pnpm build && pm2 delete attend-smart-api && pm2 start dist/main.js --name attend-smart-api

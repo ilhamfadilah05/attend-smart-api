@@ -287,8 +287,7 @@ export class SubmissionService {
               id_submission: id,
               id_employee: payload.id_employee,
               lat_long: '0,0',
-              date_attend: date, // Set the specific date
-              delayed: 0,
+              date_attend: date,
               type: payload.type,
               address: '',
               image: null,

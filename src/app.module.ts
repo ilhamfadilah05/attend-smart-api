@@ -50,9 +50,10 @@ import { DashboardModule } from './dashboard/dashboard.module';
       username: process.env.POSTGRE_DB_USERNAME,
       password: process.env.POSTGRE_DB_PASSWORD,
       database: process.env.POSTGRE_DB_NAME,
-      ssl: {
-        rejectUnauthorized: false, // untuk melewati verifikasi sertifikat self-signed
-      },
+      ssl: false,
+      // {
+      //   rejectUnauthorized: false, // untuk melewati verifikasi sertifikat self-signed
+      // }
       entities: [
         // __dirname + '/**/*.entity.{js,ts}'
         User,

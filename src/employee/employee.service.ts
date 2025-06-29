@@ -44,33 +44,6 @@ export class EmployeeService {
         throw new BadRequestException('Image is required');
       }
 
-      // check user and validate
-      const [user] = await queryRunner.manager.query(
-        'SELECT id FROM users WHERE id = $1',
-        [payload.id_user],
-      );
-      if (!user) {
-        throw new BadRequestException('User not found!');
-      }
-
-      // check department and validate
-      const [department] = await queryRunner.manager.query(
-        'SELECT id FROM departments WHERE id = $1',
-        [payload.id_department],
-      );
-      if (!department) {
-        throw new BadRequestException('Department is not found');
-      }
-
-      // check branch and validate
-      const [branch] = await queryRunner.manager.query(
-        'SELECT id FROM branches WHERE id = $1',
-        [payload.id_branch],
-      );
-      if (!branch) {
-        throw new BadRequestException('Branch is not found');
-      }
-
       // set image name
       imageName = 'employees/' + uuid() + '.' + image.mimetype.split('/')[1];
 

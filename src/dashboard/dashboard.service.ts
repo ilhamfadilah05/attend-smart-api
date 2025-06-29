@@ -21,18 +21,19 @@ export class DashboardService {
     private readonly res: FormatResponseHelper,
     private readonly payslipService: PayslipService,
   ) {}
+
   async findAll(query: ListDashboardDto) {
     try {
-      const startDate = new Date(
-        `${query.date_attend_gte}T00:00:00.000`,
-      ).toISOString();
+      const startDate = `${query.date_attend_gte} 00:00:00`;
 
       // Buat end date dengan waktu 23:59:59.999
-      const nextDay = new Date(`${query.date_attend_lte}T00:00:00.000`);
-      nextDay.setDate(nextDay.getDate() + 1); // Tambah 1 hari
-      nextDay.setMilliseconds(nextDay.getMilliseconds() - 1); // Kurangi 1 milidetik
+      // const nextDay = new Date(`${query.date_attend_lte}T00:00:00.000`);
+      // nextDay.setDate(nextDay.getDate() + 1); // Tambah 1 hari
+      // nextDay.setMilliseconds(nextDay.getMilliseconds() - 1); // Kurangi 1 milidetik
 
-      const endDate = nextDay.toISOString();
+      // const endDate = nextDay.toISOString();
+
+      const endDate = `${query.date_attend_lte} 23:59:59.999`;
 
       const [dataAttendDays] = await this.repository.query(
         `SELECT COUNT(*) as attendance_days
@@ -58,6 +59,8 @@ export class DashboardService {
          h.date_attend BETWEEN $2 AND $3`,
         [query.id_employee, startDate, endDate],
       );
+
+      console.log(dataAttendDays, dataSubmission);
 
       const attendDays = dataAttendDays['attendance_days'];
 
@@ -89,7 +92,6 @@ export class DashboardService {
       );
     }
   }
-
   async getTotalDataAdmin() {
     try {
       const [totalEmployee] = await this.repository.query(

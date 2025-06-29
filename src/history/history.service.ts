@@ -85,6 +85,54 @@ export class HistoryService {
         throw new NotFoundException('Branch id is not found');
       }
 
+      const now = new Date();
+      let delayed = 0;
+
+      const workStartTimeBranch = branch[0].work_start_time.split(':');
+      const workEndTimeBranch = branch[0].work_end_time.split(':');
+
+      const isMasuk = payload.type === 'MASUK';
+
+      const waktuAbsensi = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        isMasuk
+          ? parseInt(workStartTimeBranch[0])
+          : parseInt(workEndTimeBranch[0]),
+        isMasuk
+          ? parseInt(workStartTimeBranch[1])
+          : parseInt(workEndTimeBranch[1]),
+      );
+
+      const waktuAbsen = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        now.getHours(),
+        now.getMinutes(),
+      );
+
+      const selisihMenit = Math.floor(
+        (waktuAbsen.getTime() - waktuAbsensi.getTime()) / (1000 * 60),
+      );
+
+      if (selisihMenit <= branch[0].tolerance) {
+        delayed = 0;
+      } else {
+        delayed = selisihMenit;
+      }
+
+      if (payload.id_submission) {
+        delayed = 0;
+      }
+
+      console.log('jam masuk kantor', workStartTimeBranch);
+      console.log('jam pulang kantor', workEndTimeBranch);
+      console.log('toleransi kelambatan', branch[0].tolerance);
+      console.log('selisih menit', selisihMenit);
+      console.log('delayed', delayed);
+
       let imageUrl = '';
 
       if (image) {
@@ -104,7 +152,7 @@ export class HistoryService {
         : null;
       group.lat_long = payload.lat_long;
       group.date_attend = payload.date_attend;
-      group.delayed = payload.delayed;
+      group.delayed = delayed;
       group.type = payload.type;
       group.address = payload.address;
       group.image = imageUrl;
@@ -371,7 +419,6 @@ export class HistoryService {
         id_employee: payload.id_employee,
         lat_long: payload.lat_long,
         date_attend: payload.date_attend,
-        delayed: payload.delayed,
         type: payload.type,
         address: payload.address,
         image: imageName,
@@ -393,47 +440,6 @@ export class HistoryService {
       if (imageName.length > 0) {
         await this.fs.removeFile(imageName);
       }
-    } finally {
-      await queryRunner.release();
-    }
-  }
-
-  async remove(id: string) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // Format tanggal ke ISO string agar diterima oleh PostgreSQL
-      const now = new Date().toISOString();
-
-      const querySQL = `
-      UPDATE histories
-      SET deleted_at = $1
-      WHERE id = $2 
-      RETURNING *;
-    `;
-      const params = [now, id];
-
-      const result = await queryRunner.manager.query(querySQL, params);
-
-      if (result.length === 0) {
-        throw new NotFoundException('Histories not found');
-      }
-
-      await queryRunner.commitTransaction();
-
-      return this.res.formatResponse({
-        success: true,
-        statusCode: 200,
-        message: 'Delete histories success',
-      });
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      this.error.handleError(
-        error,
-        `${HistoryService.name}.${this.remove.name}`,
-      );
     } finally {
       await queryRunner.release();
     }
