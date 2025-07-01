@@ -218,7 +218,7 @@ export class DashboardService {
         AND type != 'LEMBUR'
         AND date_attend >= CURRENT_DATE - INTERVAL '30 DAY'
         GROUP BY label, type
-        ORDER BY MIN(date_attend) ASC;`;
+        ORDER BY MIN(date_attend) ASC`;
       }
 
       const data = await this.repository.query(queryStmt);
@@ -252,10 +252,10 @@ export class DashboardService {
             grouped[label] = { label, in_work: 0, absent_work: 0 };
           }
 
-          if (row.type === 'MASUK') {
-            grouped[label].in_work = parseInt(row.total);
-          } else {
+          if (row.type === 'KELUAR') {
             grouped[label].absent_work = parseInt(row.total);
+          } else {
+            grouped[label].in_work = parseInt(row.total);
           }
         }
 
@@ -275,10 +275,10 @@ export class DashboardService {
 
           console.log('row.type', row.type);
 
-          if (row.type === 'MASUK') {
-            grouped[label].in_work = parseInt(row.total);
-          } else {
+          if (row.type === 'KELUAR') {
             grouped[label].absent_work = parseInt(row.total);
+          } else {
+            grouped[label].in_work = parseInt(row.total);
           }
         }
 

@@ -215,13 +215,13 @@ export class HistoryService {
 
       if (query.id_branch !== undefined) {
         const paramIndex = searchParams.length + 1;
-        searchConditions.push(`h.id_branch = $${paramIndex}`);
+        searchConditions.push(`e.id_branch = $${paramIndex}`);
         searchParams.push(query.id_branch);
       }
 
       if (query.id_department !== undefined) {
         const paramIndex = searchParams.length + 1;
-        searchConditions.push(`h.id_department = $${paramIndex}`);
+        searchConditions.push(`e.id_department = $${paramIndex}`);
         searchParams.push(query.id_department);
       }
 
@@ -385,12 +385,62 @@ export class HistoryService {
 
       // check employee
       const [employee] = await queryRunner.manager.query(
-        'SELECT id FROM employees WHERE id = $1 AND deleted_at IS NULL',
+        'SELECT id, id_branch FROM employees WHERE id = $1 AND deleted_at IS NULL',
         [payload.id_employee],
       );
 
       // validate
       if (!employee) throw new NotFoundException('Employee not found');
+
+      console.log('payload.date_attend', payload.date_attend);
+      const idBranch = employee['id_branch'];
+
+      const branch: Branch[] = await queryRunner.query(
+        'SELECT id, tolerance, work_start_time, work_end_time FROM branches WHERE id = $1',
+        [idBranch],
+      );
+      const now = new Date();
+      let delayed = 0;
+
+      const workStartTimeBranch = branch[0].work_start_time.split(':');
+      const workEndTimeBranch = branch[0].work_end_time.split(':');
+
+      const isMasuk = payload.type === 'MASUK';
+
+      const tanggalAbsensi = new Date(payload.date_attend);
+      const waktuAbsensi = new Date(
+        tanggalAbsensi.getFullYear(),
+        tanggalAbsensi.getMonth(),
+        tanggalAbsensi.getDate(),
+        isMasuk
+          ? parseInt(workStartTimeBranch[0])
+          : parseInt(workEndTimeBranch[0]),
+        isMasuk
+          ? parseInt(workStartTimeBranch[1])
+          : parseInt(workEndTimeBranch[1]),
+      );
+
+      const waktuAbsen = new Date(payload.date_attend);
+
+      const selisihMenit = Math.floor(
+        (waktuAbsen.getTime() - waktuAbsensi.getTime()) / (1000 * 60),
+      );
+
+      if (selisihMenit <= branch[0].tolerance) {
+        delayed = 0;
+      } else {
+        delayed = selisihMenit;
+      }
+
+      if (payload.id_submission) {
+        delayed = 0;
+      }
+
+      console.log('jam masuk kantor', workStartTimeBranch);
+      console.log('jam pulang kantor', workEndTimeBranch);
+      console.log('toleransi kelambatan', branch[0].tolerance);
+      console.log('selisih menit', selisihMenit);
+      console.log('delayed', delayed);
 
       // check image
       if (image) {
@@ -420,6 +470,7 @@ export class HistoryService {
         lat_long: payload.lat_long,
         date_attend: payload.date_attend,
         type: payload.type,
+        delayed: delayed,
         address: payload.address,
         image: imageName,
       });
