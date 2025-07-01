@@ -10,6 +10,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { History } from 'src/libs/entities/history.entity';
 import { PayslipService } from 'src/payslip/payslip.service';
+import dayjs from 'dayjs';
 
 export class DashboardService {
   constructor(
@@ -196,13 +197,11 @@ export class DashboardService {
   async getDataStatisticAdmin(query: DashboardStatisticDto) {
     try {
       let queryStmt = '';
-      let startDate: Date;
-      let endDate: Date;
+      let startDate = new Date();
+      let endDate = new Date();
 
       if (query.type === 'weekly') {
-        startDate = new Date();
-        startDate.setDate(startDate.getDate() - 6);
-        endDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
         queryStmt = `SELECT 
         TO_CHAR(date_attend, 'Day') AS day_name,
         EXTRACT(DOW FROM date_attend) AS day_order,
@@ -218,9 +217,8 @@ export class DashboardService {
       }
 
       if (query.type === 'monthly') {
-        startDate = new Date();
         startDate.setDate(1);
-        endDate = new Date();
+
         queryStmt = `SELECT 
         TO_CHAR(date_attend, 'DD-MM-YYYY') AS label, type,
         COUNT(*) as total
@@ -232,7 +230,22 @@ export class DashboardService {
         ORDER BY MIN(date_attend) ASC`;
       }
 
-      const data = await this.repository.query(queryStmt, [startDate, endDate]);
+      const startDateFormatted = dayjs(startDate).format('YYYY-MM-DD');
+      const endDateFormatted = dayjs(endDate).format('YYYY-MM-DD');
+
+      const startDateZ = dayjs(startDateFormatted)
+        .startOf('day')
+        .add(1, 'second')
+        .toDate();
+      const endDateZ = dayjs(endDateFormatted)
+        .endOf('day')
+        .set('millisecond', 0)
+        .toDate();
+
+      const data = await this.repository.query(queryStmt, [
+        startDateZ,
+        endDateZ,
+      ]);
       let finalData;
       console.log('DATA', data);
 
