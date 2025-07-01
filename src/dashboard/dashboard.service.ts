@@ -11,6 +11,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { History } from 'src/libs/entities/history.entity';
 import { PayslipService } from 'src/payslip/payslip.service';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export class DashboardService {
   constructor(
@@ -231,7 +236,7 @@ export class DashboardService {
       }
 
       const startDateFormatted = dayjs(startDate).format('YYYY-MM-DD');
-      const endDateFormatted = dayjs(endDate).format('YYYY-MM-DD');
+      const endDateFormatted = dayjxs(endDate).format('YYYY-MM-DD');
 
       const startDateZ = dayjs(startDateFormatted)
         .startOf('day')
