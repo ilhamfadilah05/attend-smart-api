@@ -236,7 +236,7 @@ export class DashboardService {
       }
 
       const startDateFormatted = dayjs(startDate).format('YYYY-MM-DD');
-      const endDateFormatted = dayjxs(endDate).format('YYYY-MM-DD');
+      const endDateFormatted = dayjs(endDate).format('YYYY-MM-DD');
 
       const startDateZ = dayjs(startDateFormatted)
         .startOf('day')
