@@ -60,7 +60,7 @@ export class DashboardService {
         [query.id_employee, startDate, endDate],
       );
 
-      console.log(dataAttendDays, dataSubmission);
+      console.log('attendDays', dataAttendDays, dataSubmission);
 
       const attendDays = dataAttendDays['attendance_days'];
 

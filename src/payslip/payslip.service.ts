@@ -14,6 +14,7 @@ import { Salary } from 'src/libs/entities/salary.entity';
 import { EmployeeService } from 'src/employee/employee.service';
 import { SalaryService } from 'src/salary/salary.service';
 import { HistoryService } from 'src/history/history.service';
+import { toZonedTime } from 'date-fns-tz';
 
 @Injectable()
 export class PayslipService {
@@ -46,8 +47,28 @@ export class PayslipService {
   }
 
   // 💼 Fungsi untuk Membuat Slip Gaji Otomatis
+  private isRunning = false;
   @Cron('0 0 6 1 * *', { timeZone: 'Asia/Jakarta' }) // Setiap tanggal 1 jam 6 pagi
+  // @Cron('* * * * *', { timeZone: 'Asia/Jakarta' }) // Setiap Menit
   async handlePayrollGeneration() {
+    const lockKey = 987654; // angka acak, bebas tapi tetap konsisten
+
+    // Coba acquire lock
+    const acquired = await this.repository.query(
+      `SELECT pg_try_advisory_lock($1)`,
+      [lockKey],
+    );
+
+    if (!acquired[0].pg_try_advisory_lock) {
+      this.logger.warn('Cron job is already locked, skipping...');
+      return;
+    }
+    if (this.isRunning) {
+      this.logger.warn('Cron job is already running, skipping...');
+      return;
+    }
+    this.isRunning = true;
+
     this.logger.debug('Membuat slip gaji otomatis...');
     try {
       // get data employee
@@ -71,12 +92,34 @@ export class PayslipService {
 
         // get date before 1 month
         const now = new Date();
-        const firstDayLastMonth = new Date(
-          now.getFullYear(),
-          now.getMonth() - 1,
-          1,
+        const timeZone = 'Asia/Jakarta';
+        // Tentukan bulan sebelumnya
+        const year = now.getFullYear();
+        const month = now.getMonth(); // bulan sekarang (misal Juli = 6)
+
+        // First day of last month, jam 00:00:01
+        const firstDayLastMonthLocal = new Date(year, month - 1, 1, 0, 0, 1);
+        const firstDayLastMonth = toZonedTime(firstDayLastMonthLocal, timeZone);
+
+        // Last day of last month, jam 23:59:59
+        const lastDayLastMonthLocal = new Date(year, month, 0, 23, 59, 59);
+        const lastDayLastMonth = toZonedTime(lastDayLastMonthLocal, timeZone);
+
+        const existingPayslip = await this.repository.query(
+          `SELECT id FROM payslips 
+           WHERE id_employee = $1 AND payroll_month = $2 AND deleted_at IS NULL`,
+          [employee.id, lastDayLastMonth],
         );
-        const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+
+        if (existingPayslip.length > 0) {
+          this.logger.debug(
+            `Payslip for ${employee.name} on ${lastDayLastMonth} already exists, skipping...`,
+          );
+          continue;
+        }
+
+        console.log('first date', firstDayLastMonth);
+        console.log('last date', lastDayLastMonth);
 
         // count attendance
         const countAttendance = (await this.repository.query(
@@ -131,6 +174,8 @@ export class PayslipService {
       this.logger.debug('Slip gaji berhasil dibuat!');
     } catch (error) {
       this.logger.error(`Error: ${error.message}`);
+    } finally {
+      await this.repository.query(`SELECT pg_advisory_unlock($1)`, [lockKey]);
     }
   }
 
