@@ -10,7 +10,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { History } from 'src/libs/entities/history.entity';
 import { PayslipService } from 'src/payslip/payslip.service';
-import dayjs from 'dayjs';
 
 export class DashboardService {
   constructor(
@@ -136,19 +135,16 @@ export class DashboardService {
 
   async getDataInOutAdmin() {
     try {
-      const now = new Date();
       const [dataOut] = await this.repository.query(
         `SELECT COUNT(*) as total
          FROM histories WHERE deleted_at IS NULL
-         AND type = 'KELUAR' AND date_attend = $1`,
-        [now],
+         AND type = 'KELUAR' AND date_attend >= CURRENT_DATE`,
       );
 
       const [dataIn] = await this.repository.query(
         `SELECT COUNT(*) as total
          FROM histories WHERE deleted_at IS NULL
-         AND type != 'KELUAR' AND type != 'LEMBUR' AND date_attend = $1`,
-        [now],
+         AND type != 'KELUAR' AND type != 'LEMBUR' AND date_attend >= CURRENT_DATE`,
       );
 
       const dataInOut = {
@@ -197,11 +193,8 @@ export class DashboardService {
   async getDataStatisticAdmin(query: DashboardStatisticDto) {
     try {
       let queryStmt = '';
-      let startDate = new Date();
-      let endDate = new Date();
 
       if (query.type === 'weekly') {
-        startDate.setDate(startDate.getDate() - 7);
         queryStmt = `SELECT 
         TO_CHAR(date_attend, 'Day') AS day_name,
         EXTRACT(DOW FROM date_attend) AS day_order,
@@ -210,42 +203,25 @@ export class DashboardService {
         FROM histories
         WHERE deleted_at IS NULL
         AND type != 'LEMBUR'
-        AND date_attend BETWEEN $1 AND $2
+        AND date_attend >= CURRENT_DATE - INTERVAL '6 DAY'
         GROUP BY day_name, day_order, type
         ORDER BY day_order;
 `;
       }
 
       if (query.type === 'monthly') {
-        startDate.setDate(1);
-
         queryStmt = `SELECT 
         TO_CHAR(date_attend, 'DD-MM-YYYY') AS label, type,
         COUNT(*) as total
         FROM histories
         WHERE deleted_at IS NULL
         AND type != 'LEMBUR'
-        AND date_attend BETWEEN $1 AND $2
+        AND date_attend >= CURRENT_DATE - INTERVAL '30 DAY'
         GROUP BY label, type
         ORDER BY MIN(date_attend) ASC`;
       }
 
-      const startDateFormatted = dayjs(startDate).format('YYYY-MM-DD');
-      const endDateFormatted = dayjs(endDate).format('YYYY-MM-DD');
-
-      const startDateZ = dayjs(startDateFormatted)
-        .startOf('day')
-        .add(1, 'second')
-        .toDate();
-      const endDateZ = dayjs(endDateFormatted)
-        .endOf('day')
-        .set('millisecond', 0)
-        .toDate();
-
-      const data = await this.repository.query(queryStmt, [
-        startDateZ,
-        endDateZ,
-      ]);
+      const data = await this.repository.query(queryStmt);
       let finalData;
       console.log('DATA', data);
 
